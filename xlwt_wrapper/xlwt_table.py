@@ -2,7 +2,7 @@ import xlwt
 
 class xlwt_table:
 
-    def __init__(self, data=None, xlwt_sheet=None, starts_at=None):
+    def __init__(self, data=None, xlwt_sheet=None, starts_at=None, styles=None):
         """
         This class is designed to let your write your table(assumed 2d array) with given offset and let you
         convert the indices to Excel string representations with intent of making formulas easier to write
@@ -14,6 +14,7 @@ class xlwt_table:
         self.data = data
         self.xlwt_sheet = xlwt_sheet
         self.starts_at = starts_at
+        self.styles = styles
         if self.starts_at is not None:
             if type(self.starts_at) == type(str):
                 self.starts_at = self.deduce_index(self.starts_at)
@@ -33,7 +34,10 @@ class xlwt_table:
         """
         for i, row in enumerate(self.data):
             for j, cell in enumerate(row):
-                self.xlwt_sheet.write(self.starts_at[1] + i,self.starts_at[0] + j, cell)
+                if self.styles != None and len(self.styles) > j:
+                    self.xlwt_sheet.write(self.starts_at[1] + i,self.starts_at[0] + j, cell, self.styles[j])
+                else:
+                    self.xlwt_sheet.write(self.starts_at[1] + i,self.starts_at[0] + j, cell)
 
     @staticmethod
     def deduce_index(text_index):
