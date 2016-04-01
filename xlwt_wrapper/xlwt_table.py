@@ -2,7 +2,7 @@ import xlwt
 
 class xlwt_table:
 
-    def __init__(self, data=None, xlwt_sheet=None, starts_at=None, styles=None):
+    def __init__(self, data=None, xlwt_sheet=None, starts_at=None, styles=None, transposed=False):
         """
         This class is designed to let your write your table(assumed 2d array) with given offset and let you
         convert the indices to Excel string representations with intent of making formulas easier to write
@@ -15,6 +15,7 @@ class xlwt_table:
         self.xlwt_sheet = xlwt_sheet
         self.starts_at = starts_at
         self.styles = styles
+        self.transposed = transposed
         if self.starts_at is not None:
             if type(self.starts_at) == type(str):
                 self.starts_at = self.deduce_index(self.starts_at)
@@ -34,10 +35,18 @@ class xlwt_table:
         """
         for i, row in enumerate(self.data):
             for j, cell in enumerate(row):
-                if self.styles != None and len(self.styles) > j:
-                    self.xlwt_sheet.write(self.starts_at[1] + i,self.starts_at[0] + j, cell, self.styles[j])
+                x = self.starts_at[1]
+                y = self.starts_at[0]
+                if self.transposed:
+                    x += j
+                    y += i
                 else:
-                    self.xlwt_sheet.write(self.starts_at[1] + i,self.starts_at[0] + j, cell)
+                    x += i
+                    y += j
+                if self.styles != None and len(self.styles) > j:
+                    self.xlwt_sheet.write(x, y, cell, self.styles[j])
+                else:
+                    self.xlwt_sheet.write(x, y, cell)
 
     @staticmethod
     def deduce_index(text_index):
@@ -51,4 +60,12 @@ class xlwt_table:
 
     def get_literal(self, index):
         """get string representation of the index(for excel formulas)"""
-        return chr(self.starts_at[0] + index[0] + 65) + str(self.starts_at[1] + index[1] + 1)
+        x = self.starts_at[0] + 65
+        y = self.starts_at[1] + 1
+        if self.transposed:
+            x += index[1]
+            y += index[0]
+        else:
+            x += index[0]
+            y += index[1]
+        return chr(x) + str(y)
